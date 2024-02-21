@@ -47,16 +47,60 @@ class EquationSolverApp
     window.show_all
   end
 
+  def calculate_determinant(matrix)
+
+    a, b, c = matrix[0][0], matrix[0][1], matrix[0][2]
+    d, e, f = matrix[1][0], matrix[1][1], matrix[1][2]
+    g, h, i = matrix[2][0], matrix[2][1], matrix[2][2]
+
+    determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g)
+
+    determinant
+  end
+
+  def calculate_error(matrix, solution)
+    rows = matrix.length
+    cols = matrix[0].length - 1
+
+    errors = []
+
+    (0..rows - 1).each do |row|
+      answer = 0
+      (0..cols - 1).each do |col|
+        answer += matrix[row][col] * solution[col]
+      end
+      puts matrix[row][cols]
+      puts answer
+      error = matrix[row][cols] - answer
+      errors << error
+    end
+
+    errors
+  end
+
   def solve_equations
     matrix = []
-
     @equation_entries.each_slice(4) do |entry_group|
       row_values = entry_group.map { |entry| entry.text.to_f }
       matrix << row_values
     end
-    solution = solve_system_of_equations(matrix)
 
-    @result_label.text = "Solution: #{solution.join(', ')}"
+    if calculate_determinant(matrix) != 0
+      solution = solve_system_of_equations(matrix)
+
+      matrix = []
+      @equation_entries.each_slice(4) do |entry_group|
+        row_values = entry_group.map { |entry| entry.text.to_f }
+        matrix << row_values
+      end
+
+      error = calculate_error(matrix, solution)
+
+      @result_label.text = "Solution: #{solution.join(', ')}\nError: #{error}\n"
+    else
+      @result_label.text = "Determinant -"
+    end
+
   end
 
   def solve_system_of_equations(matrix)
@@ -131,8 +175,8 @@ end
 
   def fill_entries_from_matrix(matrix)
     @equation_entries.each_with_index do |entry, index|
-      row = index / 4
-      col = index % 4
+      row = (index / 4)
+      col = (index % 4)
       entry.text = matrix[row][col].to_s
     end
   end
