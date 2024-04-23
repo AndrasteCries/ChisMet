@@ -3,7 +3,8 @@ require 'matrix'
 def iteration_method(matrix, b, initial_guess, tolerance)
   n = matrix.size
   x = initial_guess.clone
-  k = 0
+  interation = 0
+
   while true
     x_new = []
 
@@ -20,17 +21,17 @@ def iteration_method(matrix, b, initial_guess, tolerance)
     end
 
     max_err = max_error(x, x_new)
-    break if max_err < tolerance
+    puts "Error iteration = #{interation}: #{max_err} \n"
+    break if max_err < tolerance || interation > 100
 
     x = x_new
 
-    puts "Error iteration = #{k}: #{max_err} \n"
-    k += 1
+
+    interation += 1
     puts x.map { |q| format('%.5f', q) }.join(', ')
   end
   x
 end
-
 
 def max_error(x, x_new)
   errors = x.each_with_index.map { |xi, i| (xi - x_new[i]).abs }
@@ -76,15 +77,13 @@ def check_convergence(matrix)
   true
 end
 
-
-
 def calculate_determinant(matrix)
   raise "Matrix is not 4x4" unless matrix.size == 4 && matrix.all? { |row| row.size == 4 }
 
   Matrix[*matrix].det
 end
 
-m = 30
+m = 24
 
 matrix = [
   [5.0, 1.0, -1.0, 1.0],
@@ -94,13 +93,13 @@ matrix = [
 ]
 
 b = [3.0 * m, m - 6.0, 15.0 - m, m + 2.0]
-
 initial_guess = [0.7 * m, 1, 2, 0.5]
-
 tolerance = 0.0005
 
 determinant = calculate_determinant(matrix)
-puts determinant
+
+puts ("Determinant: #{determinant}")
+
 if determinant > 0 && check_convergence(matrix)
   solution = iteration_method(matrix, b, initial_guess, tolerance)
 
@@ -108,5 +107,5 @@ if determinant > 0 && check_convergence(matrix)
   puts solution.map { |x| format('%.5f', x) }.join(', ')
 
   error = calculate_error(matrix, solution, b)
-  puts "Загальна помилка: #{error}"
+  puts "Похибка: #{error}"
 end
